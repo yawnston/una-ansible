@@ -1,0 +1,5 @@
+---
+- name: start vm with its proper script
+  shell: "./start-{{ vm_name }}-ans.sh"
+  args:
+    chdir: ~/vm/

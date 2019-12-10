@@ -1,0 +1,7 @@
+[Match]
+Name=ens3
+
+[Network]
+Address=10.0.112.10/24
+Gateway=10.0.112.1
+DNS=10.0.12.2

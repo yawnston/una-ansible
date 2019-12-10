@@ -1,0 +1,17 @@
+---
+- name: copy base image
+  shell: "cp --sparse=always base_img.raw {{ vm_name }}_ans_img.raw"
+  args:
+    chdir: ~/vm/
+
+- name: start vm
+  shell: "./start-bootstrap-ans.sh {{ vm_name }}"
+  args:
+    chdir: ~/vm/
+
+- name: wait for vm start
+  wait_for:
+    host: 10.0.112.123
+    port: 22
+    delay: 3
+    timeout: 30

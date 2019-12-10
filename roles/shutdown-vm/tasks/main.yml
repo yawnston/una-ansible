@@ -1,0 +1,3 @@
+---
+- name: kill bootstrap vm
+  shell: "ps ux | grep -v grep | grep qemu | grep crhad-{{ vm_name }}-ans | awk '{print $2}' | xargs kill"
