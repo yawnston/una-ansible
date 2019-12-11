@@ -1,0 +1,17 @@
+---
+- name: copy base image
+  shell: "cp --sparse=always rt_base_img.raw {{ vm_name }}_ans_img.raw"
+  args:
+    chdir: ~/vm/
+
+- name: start vm
+  shell: ./start-rt-ans.sh
+  args:
+    chdir: ~/vm/
+
+- name: wait for vm start
+  wait_for:
+    host: 10.0.0.12
+    port: 22
+    delay: 3
+    timeout: 60

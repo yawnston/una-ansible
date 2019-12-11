@@ -1,0 +1,67 @@
+---
+- hosts: c
+  vars:
+    vm_name: rt
+  roles:
+    - bootstrap-rt-vm
+
+- hosts: rt
+  tasks:
+    - name: set hostname
+      lineinfile:
+        path: /etc/hostname
+        regexp: '.*'
+        line: rt.crhad.una
+
+    - name: install bird
+      pacman:
+        name: bird
+        state: present
+
+    - name: copy network files
+      copy:
+        src: "{{ item }}"
+        dest: /etc/systemd/network/
+        owner: root
+        mode: 644
+      with_fileglob:
+        - ./resources/rt/network/*
+
+    - name: copy resolved files
+      copy:
+        src: "{{ item }}"
+        dest: /etc/systemd/
+        owner: root
+        mode: 644
+      with_fileglob:
+        - ./resources/rt/systemd/*
+
+    - name: copy bird files
+      copy:
+        src: "{{ item }}"
+        dest: /etc/
+        owner: root
+        mode: 644
+      with_fileglob:
+        - ./resources/rt/bird/*
+
+    - name: enable bird
+      systemd:
+        name: bird
+        state: stopped
+        enabled: yes
+   
+    - name: enable systemd-resolved
+      systemd:
+        name: systemd-resolved
+        enabled: yes
+
+    - name: flush write cache to disk
+      shell: sync
+
+- hosts: c
+  vars:
+    vm_name: rt
+  roles:
+    - shutdown-vm
+    - start-vm

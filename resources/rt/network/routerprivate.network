@@ -1,0 +1,6 @@
+[Match]
+Name=ens4
+
+[Network]
+Address=10.0.12.1/24
+DNS=10.0.12.2
