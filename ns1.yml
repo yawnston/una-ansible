@@ -1,0 +1,60 @@
+---
+- hosts: c
+  vars:
+    vm_name: ns1
+  roles:
+    - bootstrap-vm
+
+- hosts: base
+  tasks:
+    - name: set hostname
+      lineinfile:
+        path: /etc/hostname
+        regexp: '.*'
+        line: ns1.crhad.una
+
+    - name: install nsd
+      pacman:
+        name: nsd
+        state: present
+
+    - name: copy config files
+      copy:
+        src: ./resources/ns1/nsd.conf
+        dest: /etc/nsd/nsd.conf
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: enable nsd, it will start on server restart
+      systemd:
+        name: nsd
+        state: stopped
+        enabled: yes
+
+    - name: copy systemd-networkd config
+      copy:
+        src: ./resources/ns1/routerprivate.network
+        dest: /etc/systemd/network/routerprivate.network
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: copy zone files
+      copy:
+        src: "{{ item }}"
+        dest: /etc/nsd/
+        owner: root
+        mode: 644
+      with_fileglob:
+        - ./resources/ns1/*.zone
+
+    - name: flush write cache to disk
+      shell: sync
+
+- hosts: c
+  vars:
+    vm_name: ns1
+  roles:
+    - shutdown-vm
+    - start-vm

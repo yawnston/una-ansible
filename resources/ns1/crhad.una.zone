@@ -1,0 +1,29 @@
+$ORIGIN crhad.una.
+$TTL 1800
+@	IN	SOA	ns1.crhad.una.	daniel.crha.gmail.com.	(
+			2019111801	; serial number
+			3600		; refresh
+			900		; retry
+			1209600		; expire
+			1800		; ttl
+			)
+; Name servers
+	IN	NS	ns1.crhad.una.
+	IN	NS	ns2.crhad.una.
+
+; in-zone MX records
+	IN	MX	10	mx1
+	IN	MX	20	mx2
+
+; A records for name servers
+ns1	IN	A	10.0.12.10
+ns2	IN	A	10.0.112.10
+
+; Mail server A records
+mx1	IN	A	10.0.12.20
+mx2	IN	A	10.0.112.20
+
+; Additional A records
+rt	IN	A	10.0.0.12
+gw	CNAME		rt
+dns	IN	A	10.0.12.2
