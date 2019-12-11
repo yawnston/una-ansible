@@ -1,0 +1,92 @@
+---
+- hosts: c
+  vars:
+    vm_name: mx1
+  roles:
+    - bootstrap-vm
+
+- hosts: base
+  tasks:
+    - name: set hostname
+      lineinfile:
+        path: /etc/hostname
+        regexp: '.*'
+        line: mx1.crhad.una
+
+    - name: install postfix and dovecot
+      pacman:
+        name:
+          - postfix
+          - dovecot
+        state: present
+
+    - name: copy systemd-networkd config
+      copy:
+        src: ./resources/mx1/routerprivate.network
+        dest: /etc/systemd/network/routerprivate.network
+        owner: root
+        group: root
+        mode: '0644'
+
+    # Got some weird crashes about platform modules with the group and user modules
+    - name: create vmail group
+      shell: groupadd -g 5000 vmail
+
+    - name: create vmail user
+      shell: useradd -u 5000 -g vmail -s /usr/bin/nologin -d /home/vmail -m vmail
+
+    - name: copy certificate
+      copy:
+        src: ./resources/mx1/ssl/vmail.crt
+        dest: /etc/ssl/private/
+        owner: root
+        mode: 444
+
+    # DON'T FORGET TO COPY THE KEY INTO RESOURCES FOLDER SINCE IT ISN'T TRACKED IN GIT
+    # THE KEY IS IN A SECRET GIST
+    - name: copy cert key
+      copy:
+        src: ./resources/mx1/ssl/vmail.key
+        dest: /etc/ssl/private/
+        owner: root
+        mode: 400
+
+    - name: copy postfix files
+      copy:
+        src: "{{ item }}"
+        dest: /etc/postfix/
+        owner: root
+        mode: 644
+      with_fileglob:
+        - ./resources/mx1/postfix/*
+
+    - name: copy dovecot files
+      copy:
+        src: "{{ item }}"
+        dest: /etc/dovecot/
+        owner: root
+        mode: 644
+      with_fileglob:
+        - ./resources/mx1/dovecot/*
+
+    - name: enable postfix
+      systemd:
+        name: postfix
+        state: stopped
+        enabled: yes
+
+    - name: enable dovecot
+      systemd:
+        name: dovecot
+        state: stopped
+        enabled: yes
+
+    - name: flush write cache to disk
+      shell: sync
+
+- hosts: c
+  vars:
+    vm_name: mx1
+  roles:
+    - shutdown-vm
+    - start-vm
